@@ -18,8 +18,12 @@ func (p *Pool) Acquire() (*Session, error) {
 func (s *Session) Close(success bool) {
     if s.closed { return }
     s.closed = true
-    s.pool.committed++
+    // 释放资源对所有结果都生效；但只有成功项才计入完成数，
+    // 失败的重试必须被排除，避免无效重试被算作完成。
     s.pool.open--
+    if success {
+        s.pool.committed++
+    }
 }
 
 func (p *Pool) Open() int { return p.open }
