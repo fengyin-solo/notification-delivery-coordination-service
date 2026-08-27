@@ -15,10 +15,14 @@ func (p *Pool) Acquire() (*Session, error) {
     return &Session{pool: p}, nil
 }
 
+// Close 归还执行会话：无论成功与否都释放占用（open--），
+// 但只有成功的定时任务才计入提交（committed++）；被拒绝的任务不提交。
 func (s *Session) Close(success bool) {
     if s.closed { return }
     s.closed = true
-    s.pool.committed++
+    if success {
+        s.pool.committed++
+    }
     s.pool.open--
 }
 
