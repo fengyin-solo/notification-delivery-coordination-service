@@ -12,7 +12,7 @@ func (b *Batch) Process(outcomes []error) (int, error) {
         session, err := b.pool.Acquire()
         if err != nil { return succeeded, err }
         success := outcome == nil
-        defer session.Close(success)
+        session.Close(success)
         if success { succeeded++ }
     }
     return succeeded, nil
