@@ -18,8 +18,12 @@ func (p *Pool) Acquire() (*Session, error) {
 func (s *Session) Close(success bool) {
     if s.closed { return }
     s.closed = true
-    s.pool.committed++
+    // 会话资源无论成败都归还，保证后续渠道可再次探测。
     s.pool.open--
+    // 仅成功项计入提交数，失败项不提交。
+    if success {
+        s.pool.committed++
+    }
 }
 
 func (p *Pool) Open() int { return p.open }
