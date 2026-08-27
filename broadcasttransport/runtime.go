@@ -16,7 +16,7 @@ func (g *Gateway) Send(key string) error {
     g.calls++
     index := g.calls - 1
     if index >= len(g.outcomes) { return nil }
-    if err := g.outcomes[index]; err != nil { return fmt.Errorf("send %s: %v", key, err) }
+    if err := g.outcomes[index]; err != nil { return fmt.Errorf("send %s: %w", key, err) }
     return nil
 }
 

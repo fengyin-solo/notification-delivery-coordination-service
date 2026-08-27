@@ -1,6 +1,9 @@
 package broadcastdispatch
 
-import "notification/broadcasttransport"
+import (
+    "errors"
+    "notification/broadcasttransport"
+)
 
 type Coordinator struct { gateway *broadcasttransport.Gateway; committed int }
 
@@ -11,6 +14,8 @@ func (c *Coordinator) Run(key string) error {
     for attempt := 0; attempt < 3; attempt++ {
         err := c.gateway.Send(key)
         if err == nil { c.committed++; return nil }
+        // A rejection is terminal: never retry, never leave a committed record.
+        if errors.Is(err, broadcasttransport.ErrRejected) { return err }
         last = err
     }
     return last
