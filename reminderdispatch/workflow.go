@@ -1,6 +1,10 @@
 package reminderdispatch
 
-import "notification/remindertransport"
+import (
+    "errors"
+
+    "notification/remindertransport"
+)
 
 type Coordinator struct { gateway *remindertransport.Gateway; committed int }
 
@@ -11,6 +15,9 @@ func (c *Coordinator) Run(key string) error {
     for attempt := 0; attempt < 3; attempt++ {
         err := c.gateway.Send(key)
         if err == nil { c.committed++; return nil }
+        // An explicit rejection is not retryable: return immediately without
+        // committing so a later success cannot overwrite the earlier rejection.
+        if errors.Is(err, remindertransport.ErrRejected) { return err }
         last = err
     }
     return last
